@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Models\DataSource;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ObjectType;
 
@@ -115,6 +116,72 @@ class Types
                 ]
             ]
         ]);
+        $orderItemAttributeInputType = new InputObjectType([
+            'name' => 'OrderItemAttributeInput',
+            'fields' => [
+                'attributeId' => ['type' => Type::nonNull(Type::int())],
+                'value' => ['type' => Type::nonNull(Type::string())],
+            ]
+        ]);
+        $orderItemInputType = new InputObjectType([
+            'name' => 'OrderItemInput',
+            'fields' => [
+                'productId' => ['type' => Type::nonNull(Type::string())],
+                'quantity' => ['type' => Type::nonNull(Type::int())],
+                'attributes' => ['type' => Type::listOf($orderItemAttributeInputType)],
+            ]
+        ]);
+        $orderInputType = new InputObjectType([
+            'name' => 'OrderInput',
+            'fields' => [
+                'items' => ['type' => Type::nonNull(Type::listOf($orderItemInputType))],
+            ]
+        ]);
+
+        $orderItemAttrType = new ObjectType([
+            'name' => 'OrderItemAttr',
+            'fields' => [
+                'id' => Type::int(),
+                'order_item_id' => Type::int(),
+                'attribute_id' => Type::int(),
+                'value' => Type::string(),
+            ],
+        ]);
+
+        $orderItemType = new ObjectType([
+            'name' => 'OrderItem',
+            'fields' => [
+                'id' => Type::int(),
+                'order_id' => Type::int(),
+                'product_id' => Type::string(),
+                'quantity' => Type::int(),
+                'price' => Type::float(),
+                'attributes' => [
+                    'type' => Type::listOf($orderItemAttrType),
+                    'resolve' => function ($rootValue) {
+                        $result = DataSource::getOrderItemAttrByOrderItemId($rootValue['id']);
+                        return $result;
+                    }
+                ]
+            ],
+        ]);
+
+        $orderType = new ObjectType([
+            'name' => 'Order',
+            'fields' => [
+                'id' => Type::int(),
+                'status' => Type::string(),
+                'created_at' => Type::string(),
+                'items' => [
+                    'type' => Type::listOf($orderItemType),
+                    'resolve' => function ($rootValue) {
+                        $result = DataSource::getOrderItemsByOrderId($rootValue['id']);
+                        return $result;
+                    }
+                ]
+            ],
+        ]);
+
         self::$categoryType = $categoryType;
         self::$productType = $productType;
         self::$currencyType = $currencyType;
