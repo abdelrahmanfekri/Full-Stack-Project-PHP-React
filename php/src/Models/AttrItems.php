@@ -7,7 +7,7 @@ class AttrItems extends AbstractModel
 
     public function getItemByProductAttrId($pk)
     {
-        $sql = "SELECT * FROM ProductAttributeItems WHERE attribute_id = ?";
+        $sql = "SELECT * FROM AttributesItems WHERE attribute_id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("s", $pk);
         $stmt->execute();

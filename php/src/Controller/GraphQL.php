@@ -29,18 +29,26 @@ class GraphQL
                     'products' => [
                         'type' => Type::listOf(Types::$productType),
                         'args' => [
-                            'category' => Type::string()
+                            'category' => Type::string(),
                         ],
                         'resolve' => function ($root, $args, $context) {
                             if (isset($args['category'])) {
-                                return $context->getProductsByCategory($args['category']);
+                                return DataSource::getProductsByCategory($args['category']);
                             }
-                            return $context->getProducts();
+                            return DataSource::getProducts();
+                        }
+                    ],
+                    'product' => [
+                        'type' => Types::$productType,
+                        'args' => [
+                            'id' => Type::nonNull(Type::string()),
+                        ],
+                        'resolve' => function ($root, $args, $context) {
+                            return DataSource::getProductById($args['id']);
                         }
                     ]
                 ]
             ]);
-
             $mutationType = new ObjectType([
                 'name' => 'Mutation',
                 'fields' => [

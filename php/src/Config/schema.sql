@@ -49,3 +49,27 @@ CREATE TABLE IF NOT EXISTS Prices (
     FOREIGN KEY (currency_id) REFERENCES Currencies (id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES Products (id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS Orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS OrderItems (
+    id SERIAL PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES Orders (id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES Products (id) ON DELETE CASCADE
+);
+
+CREATE OrderItemAttr (
+    id SERIAL PRIMARY KEY,
+    order_item_id INT NOT NULL,
+    attribute_id INT NOT NULL,
+    value VARCHAR(255) NOT NULL,
+    FOREIGN KEY (order_item_id) REFERENCES OrderItems (id) ON DELETE CASCADE,
+)

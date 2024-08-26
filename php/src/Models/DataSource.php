@@ -37,18 +37,7 @@ class DataSource
 
     public static function getCategory()
     {
-        $db = Database::getConnection();
-        return [
-            [
-                "name" => "Electronics",
-            ],
-            [
-                "name" => "Clothing",
-            ],
-            [
-                "name" => "Books",
-            ]
-        ];
+        return self::$category->getAll();
     }
 
     public static function getCurrencyById($id)
@@ -73,6 +62,14 @@ class DataSource
 
     public static function getProductsByCategory($category)
     {
+        if ($category === 'all') {
+            return self::$product->getAll();
+        }
         return self::$product->getByCategory($category);
+    }
+
+    public static function getProductById($Id)
+    {
+        return self::$product->getById($Id);
     }
 }

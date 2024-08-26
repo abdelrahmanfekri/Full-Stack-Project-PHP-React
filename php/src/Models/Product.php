@@ -18,4 +18,13 @@ class Product extends AbstractModel
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
+
+    public function getById($id)
+    {
+        $sql = "SELECT * FROM Products WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("s", $id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+    }
 }

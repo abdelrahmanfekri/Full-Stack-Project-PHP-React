@@ -9,7 +9,7 @@ class Database
 {
     private static $conn;
 
-    private static function connect()
+    public static function connect()
     {
         $host = "127.0.0.1";
         $db = "testdb";
@@ -20,7 +20,7 @@ class Database
             throw new Exception("Connection failed: " . self::$conn->connect_error);
         }
         self::$conn->set_charset("utf8mb4");
-        echo "Connected successfully \n";
+        error_log("Connected successfully \n");
     }
 
     public static function getConnection()
@@ -28,7 +28,7 @@ class Database
         if (!self::$conn) {
             self::connect();
         }
-        echo "Returning connection \n";
+        error_log("Returning connection \n");
         return self::$conn;
     }
 }

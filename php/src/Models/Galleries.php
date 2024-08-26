@@ -6,7 +6,7 @@ class Galleries extends AbstractModel
 {
     public function getGalleryByProductId($Id)
     {
-        $sql = "SELECT * FROM Galleries WHERE product_id = ?";
+        $sql = "SELECT * FROM ProductGalleries WHERE product_id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("s", $Id);
         $stmt->execute();

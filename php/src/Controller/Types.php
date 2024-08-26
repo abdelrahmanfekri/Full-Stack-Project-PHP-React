@@ -46,7 +46,8 @@ class Types
                 'items' => [
                     'type' => Type::listOf($attributeItemType),
                     'resolve' => function ($rootValue) {
-                        return DataSource::getAttrItemsByAttrId($rootValue['id']);
+                        $result = DataSource::getAttrItemsByAttrId($rootValue['pk']);
+                        return $result;
                     }
                 ],
                 'name' => Type::string(),
@@ -79,7 +80,7 @@ class Types
                         $result = [];
                         $fetchResult = DataSource::getGalleriesByProductId($rootValue['id']);
                         foreach ($fetchResult as $value) {
-                            array_push($result, $value['url']);
+                            $result[] = $value['image_url'];
                         }
                         return $result;
                     }
@@ -89,7 +90,8 @@ class Types
                 'attributes' => [
                     'type' => Type::listOf($attributeSetType),
                     'resolve' => function ($rootValue) {
-                        return DataSource::getAttributeByProductId($rootValue['id']);
+                        $result = DataSource::getAttributeByProductId($rootValue['id']);
+                        return $result;
                     }
                 ],
                 'prices' => [
@@ -105,6 +107,12 @@ class Types
             'name' => 'Category',
             'fields' => [
                 'name' => Type::string(),
+                'products' => [
+                    'type' => Type::listof($productType),
+                    'resolve' => function ($rootValue) {
+                        return DataSource::getProductsByCategory($rootValue['name']);
+                    }
+                ]
             ]
         ]);
         self::$categoryType = $categoryType;

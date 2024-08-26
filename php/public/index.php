@@ -2,6 +2,18 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+try {
+    App\Config\Database::connect();
+    App\Models\DataSource::init();
+} catch (Exception $e) {
+    error_log("Initialization error: " . $e->getMessage());
+    exit;
+}
+
+// allow origin *
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: *');
+
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
     $r->post('/graphql', [App\Controller\GraphQL::class, 'handle']);
 });
