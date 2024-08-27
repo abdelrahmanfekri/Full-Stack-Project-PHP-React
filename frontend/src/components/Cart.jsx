@@ -85,10 +85,10 @@ class Cart extends React.Component {
       quantity: item.quantity,
       product_id: item.id,
       price: item.prices[0].amount,
-      attributes: [
-        { attribute_id: "size", value: item.selectedSize },
-        { attribute_id: "color", value: item.selectedColor },
-      ],
+      attributes: Object.keys(item.selectedAttributes).map((key) => ({
+        attribute_id: key,
+        value: item.selectedAttributes[key],
+      })),
     }));
 
     try {
@@ -120,7 +120,7 @@ class Cart extends React.Component {
             return (
               <div
                 key={option.id}
-                className={`mr-1 p-1 border ${
+                className={`mr-1 border ${
                   isSelected ? "border-black" : "border-gray-300"
                 }`}
                 data-testid={`cart-item-attribute-${attributeNameKebab}-${optionNameKebab}${
@@ -133,7 +133,7 @@ class Cart extends React.Component {
                     style={{ backgroundColor: option.value }}
                   ></div>
                 ) : (
-                  <span className="text-xs">{option.value}</span>
+                  <span className="text-xs m-2">{option.value}</span>
                 )}
               </div>
             );
@@ -177,12 +177,15 @@ class Cart extends React.Component {
         {this.state.isOpen && (
           <>
             <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-40"
+              className="fixed  top-16 inset-0 bg-black bg-opacity-30 z-40"
               onClick={this.toggleCart}
             ></div>
             <div className="absolute right-0 mt-2 bg-white p-4 shadow-lg w-80 z-50">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="font-bold text-lg">My Bag, {itemText}</h2>
+                <h2 className="font-bold text-lg">
+                  My Bag,{" "}
+                  <span className="font-normal text-base">{itemText}</span>
+                </h2>
               </div>
 
               {this.state.items.map((item) => (
@@ -192,7 +195,7 @@ class Cart extends React.Component {
                 >
                   <div className="flex justify-between">
                     <div>
-                      <h3 className="font-semibold">{item.name}</h3>
+                      <h3 className="font-normal">{item.name}</h3>
                       <p className="text-sm">
                         ${item.prices[0].amount.toFixed(2)}
                       </p>
@@ -200,56 +203,37 @@ class Cart extends React.Component {
                         this.renderAttributeOptions(item, attribute)
                       )}
                     </div>
+                    <div className="flex flex-col justify-between items-center mt-2">
+                      <button
+                        className="border border-black w-6 h-6 flex items-center justify-center"
+                        onClick={() => this.updateQuantity(item, 1)}
+                        data-testid="cart-item-amount-increase"
+                      >
+                        +
+                      </button>
+                      <span className="mx-2" data-testid="cart-item-amount">
+                        {item.quantity}
+                      </span>
+                      <button
+                        className="border border-black w-6 h-6 flex items-center justify-center"
+                        onClick={() => this.updateQuantity(item, -1)}
+                        data-testid="cart-item-amount-decrease"
+                      >
+                        -
+                      </button>
+                    </div>
                     <img
                       src={item.gallery[0]}
                       alt={item.name}
                       className="w-20 h-20 object-cover"
                     />
                   </div>
-                  <div className="flex justify-between items-center mt-2">
-                    <div className="flex items-center">
-                      <button
-                        className="border w-6 h-6 flex items-center justify-center"
-                        onClick={() => this.updateQuantity(item, -1)}
-                        data-testid="cart-item-amount-decrease"
-                      >
-                        -
-                      </button>
-                      <span className="mx-2" data-testid="cart-item-amount">
-                        {item.quantity}
-                      </span>
-                      <button
-                        className="border w-6 h-6 flex items-center justify-center"
-                        onClick={() => this.updateQuantity(item, 1)}
-                        data-testid="cart-item-amount-increase"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <button
-                      className="text-gray-500"
-                      onClick={() => this.removeItem(item)}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                  </div>
                 </div>
               ))}
 
               <div className="flex justify-between items-center font-semibold mb-4">
                 <span>Total</span>
-                <span>${this.calculateTotal()}</span>
+                <span data-testid="cart-total">${this.calculateTotal()}</span>
               </div>
 
               <button

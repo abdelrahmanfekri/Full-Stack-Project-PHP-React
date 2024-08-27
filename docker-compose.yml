@@ -1,33 +1,48 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  nginx:
+    image: nginx:latest
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
-      - ./:/var/www/html
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - php
+      - frontend
+
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ./php:/var/www
     depends_on:
       - db
     environment:
-      - DATABASE_HOST=db
-      - DATABASE_USER=testuser
-      - DATABASE_PASSWORD=testpass
-      - DATABASE_NAME=testdb
+      DB_HOST: db
+      DB_NAME: myapp
+      DB_USER: myuser
+      DB_PASS: mypassword
 
   db:
-    image: mysql:5.7
+    image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: testdb
-      MYSQL_USER: testuser
-      MYSQL_PASSWORD: testpass
+      MYSQL_DATABASE: myapp
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
     volumes:
-      - db_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
+      - mysql_data:/var/lib/mysql
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
 volumes:
-  db_data:
+  mysql_data:

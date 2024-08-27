@@ -11,10 +11,10 @@ class Database
 
     public static function connect()
     {
-        $host = "127.0.0.1";
-        $db = "testdb";
-        $user = "testuser";
-        $pass = "testpass";
+        $host = getenv('DB_HOST') ?: '127.0.0.1';
+        $db = getenv('DB_NAME') ?: 'testdb';
+        $user = getenv('DB_USER') ?: 'testuser';
+        $pass = getenv('DB_PASS') ?: 'testpass';
         self::$conn = new mysqli($host, $user, $pass, $db);
         if (self::$conn->connect_error) {
             throw new Exception("Connection failed: " . self::$conn->connect_error);
