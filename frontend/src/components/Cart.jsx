@@ -1,37 +1,7 @@
 import React from "react";
-import { gql, useMutation } from "@apollo/client";
-
-const CREATE_ORDER = gql`
-  mutation CreateOrder($items: [OrderItemInput!]!) {
-    createOrder(order: { items: $items })
-  }
-`;
+import { withCartContext } from "../context/CartContext";
 
 class Cart extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      items: [],
-      isOpen: false,
-    };
-  }
-
-  componentDidMount() {
-    this.loadCartItems();
-  }
-
-  loadCartItems = () => {
-    const items = JSON.parse(localStorage.getItem("cart")) || [];
-    this.setState({ items });
-  };
-
-  toggleCart = () => {
-    this.setState((prevState) => ({ isOpen: !prevState.isOpen }));
-    if (!this.state.isOpen) {
-      this.loadCartItems();
-    }
-  };
-
   renderColorOption(color) {
     const colorClasses = {
       gray: "bg-gray-400",
@@ -45,62 +15,6 @@ class Cart extends React.Component {
       ></div>
     );
   }
-
-  calculateTotal() {
-    return this.state.items
-      .reduce((total, item) => total + item.prices[0].amount * item.quantity, 0)
-      .toFixed(2);
-  }
-
-  updateQuantity = (item, change) => {
-    const updatedItems = this.state.items
-      .map((i) =>
-        i.id === item.id &&
-        i.selectedSize === item.selectedSize &&
-        i.selectedColor === item.selectedColor
-          ? { ...i, quantity: Math.max(0, i.quantity + change) }
-          : i
-      )
-      .filter((i) => i.quantity > 0);
-
-    this.setState({ items: updatedItems }, () => {
-      localStorage.setItem("cart", JSON.stringify(updatedItems));
-    });
-  };
-
-  removeItem = (item) => {
-    const updatedItems = this.state.items.filter(
-      (i) =>
-        i.id !== item.id ||
-        i.selectedSize !== item.selectedSize ||
-        i.selectedColor !== item.selectedColor
-    );
-    this.setState({ items: updatedItems }, () => {
-      localStorage.setItem("cart", JSON.stringify(updatedItems));
-    });
-  };
-
-  placeOrder = async () => {
-    const orderItems = this.state.items.map((item) => ({
-      quantity: item.quantity,
-      product_id: item.id,
-      price: item.prices[0].amount,
-      attributes: Object.keys(item.selectedAttributes).map((key) => ({
-        attribute_id: key,
-        value: item.selectedAttributes[key],
-      })),
-    }));
-
-    try {
-      await this.props.createOrder({ variables: { items: orderItems } });
-      this.setState({ items: [] });
-      localStorage.removeItem("cart");
-      alert("Order placed successfully!");
-    } catch (error) {
-      console.error("Error placing order:", error);
-      alert("Failed to place order. Please try again.");
-    }
-  };
 
   renderAttributeOptions(item, attribute) {
     const kebabCase = (str) => str.toLowerCase().replace(/\s+/g, "-");
@@ -144,7 +58,8 @@ class Cart extends React.Component {
   }
 
   render() {
-    const totalItems = this.state.items.reduce(
+    const { cartContext } = this.props;
+    const totalItems = cartContext.items.reduce(
       (sum, item) => sum + item.quantity,
       0
     );
@@ -152,7 +67,7 @@ class Cart extends React.Component {
 
     return (
       <div className="relative">
-        <button onClick={this.toggleCart} data-testid="cart-btn">
+        <button onClick={cartContext.toggleCart} data-testid="cart-btn">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -168,17 +83,17 @@ class Cart extends React.Component {
             />
           </svg>
         </button>
-        {this.state.items.length > 0 && (
+        {cartContext.items.length > 0 && (
           <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-            {this.state.items.length}
+            {cartContext.items.length}
           </span>
         )}
 
-        {this.state.isOpen && (
+        {cartContext.isOpen && (
           <>
             <div
-              className="fixed  top-16 inset-0 bg-black bg-opacity-30 z-40"
-              onClick={this.toggleCart}
+              className="fixed top-16 inset-0 bg-black bg-opacity-30 z-40"
+              onClick={cartContext.toggleCart}
             ></div>
             <div className="absolute right-0 mt-2 bg-white p-4 shadow-lg w-80 z-50">
               <div className="flex justify-between items-center mb-4">
@@ -188,7 +103,7 @@ class Cart extends React.Component {
                 </h2>
               </div>
 
-              {this.state.items.map((item) => (
+              {cartContext.items.map((item) => (
                 <div
                   key={`${item.id}-${JSON.stringify(item.selectedAttributes)}`}
                   className="mb-4 pb-4 border-b"
@@ -206,7 +121,7 @@ class Cart extends React.Component {
                     <div className="flex flex-col justify-between items-center mt-2">
                       <button
                         className="border border-black w-6 h-6 flex items-center justify-center"
-                        onClick={() => this.updateQuantity(item, 1)}
+                        onClick={() => cartContext.updateQuantity(item, 1)}
                         data-testid="cart-item-amount-increase"
                       >
                         +
@@ -216,7 +131,7 @@ class Cart extends React.Component {
                       </span>
                       <button
                         className="border border-black w-6 h-6 flex items-center justify-center"
-                        onClick={() => this.updateQuantity(item, -1)}
+                        onClick={() => cartContext.updateQuantity(item, -1)}
                         data-testid="cart-item-amount-decrease"
                       >
                         -
@@ -233,17 +148,19 @@ class Cart extends React.Component {
 
               <div className="flex justify-between items-center font-semibold mb-4">
                 <span>Total</span>
-                <span data-testid="cart-total">${this.calculateTotal()}</span>
+                <span data-testid="cart-total">
+                  ${cartContext.calculateTotal()}
+                </span>
               </div>
 
               <button
                 className={`w-full py-2 font-semibold ${
-                  this.state.items.length > 0
+                  cartContext.items.length > 0
                     ? "bg-green-500 text-white"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
-                onClick={this.placeOrder}
-                disabled={this.state.items.length === 0}
+                onClick={cartContext.placeOrder}
+                disabled={cartContext.items.length === 0}
               >
                 PLACE ORDER
               </button>
@@ -255,7 +172,4 @@ class Cart extends React.Component {
   }
 }
 
-export default function CartWithMutation() {
-  const [createOrder] = useMutation(CREATE_ORDER);
-  return <Cart createOrder={createOrder} />;
-}
+export default withCartContext(Cart);

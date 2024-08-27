@@ -1,38 +1,8 @@
 import React from "react";
-import { gql } from "@apollo/client";
 import { Link, useLocation } from "react-router-dom";
 import client from "../apollo/apolloClient";
-
-const GET_PRODUCTS = gql`
-  query GetProductByCategory($category: String!) {
-    products(category: $category) {
-      id
-      name
-      inStock
-      gallery
-      description
-      category
-      attributes {
-        id
-        name
-        items {
-          id
-          value
-          displayValue
-        }
-        type
-      }
-      prices {
-        amount
-        currency {
-          label
-          symbol
-        }
-      }
-      brand
-    }
-  }
-`;
+import { GET_CATEGORIES, GET_PRODUCTS } from "../apollo/queries";
+import { withCartContext } from "../context/CartContext";
 
 class Home extends React.Component {
   constructor(props) {
@@ -48,10 +18,17 @@ class Home extends React.Component {
 
   fetchProducts = () => {
     let category = this.props.location.pathname.split("/")[1];
-
     if (category === "") {
-      category = "all";
+      client.query({ query: GET_CATEGORIES }).then((result) => {
+        category = result.data.categories[0].name;
+        this.fetchProductsCategory(category);
+      });
+    } else {
+      this.fetchProductsCategory(category);
     }
+  };
+
+  fetchProductsCategory = (category) => {
     client
       .query({ query: GET_PRODUCTS, variables: { category: category } })
       .then((result) => {
@@ -72,14 +49,8 @@ class Home extends React.Component {
     product.attributes.forEach((attr) => {
       defaultAttributes[attr.id] = attr.items[0].id;
     });
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    cart.push({
-      ...product,
-      selectedAttributes: defaultAttributes,
-      quantity: 1,
-    });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert("Product added to cart!");
+    const { cartContext } = this.props;
+    cartContext.addToCart(product, defaultAttributes);
   };
 
   renderProductCard = (product) => {
@@ -89,7 +60,7 @@ class Home extends React.Component {
       <Link
         to={`/product/${product.id}`}
         key={product.id}
-        className="relative shadow-md p-4 group"
+        className="relative group"
         data-testid={`product-${kebabCase(product.name)}`}
       >
         <div className="relative">
@@ -97,14 +68,12 @@ class Home extends React.Component {
             src={product.gallery[0]}
             alt={product.name}
             className={`w-full h-64 object-cover ${
-              !product.inStock && "opacity-50"
+              !product.inStock && " opacity-50"
             }`}
           />
           {!product.inStock && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-2xl font-bold text-gray-800">
-                OUT OF STOCK
-              </span>
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-300 opacity-20">
+              <span className="text-2xl font-bold">OUT OF STOCK</span>
             </div>
           )}
           {product.inStock && (
@@ -146,7 +115,7 @@ class Home extends React.Component {
           {(this.props.location.pathname.split("/")[1] || "all").toUpperCase()}
         </h1>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 gap-y-32">
           {this.state.products.map(this.renderProductCard)}
         </div>
       </div>
@@ -159,4 +128,4 @@ function HomeWrapper(props) {
   return <Home {...props} location={location} />;
 }
 
-export default HomeWrapper;
+export default withCartContext(HomeWrapper);

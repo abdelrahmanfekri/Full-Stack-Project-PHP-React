@@ -1,38 +1,8 @@
 import React from "react";
-import { gql } from "@apollo/client";
 import client from "../apollo/apolloClient";
 import parse from "html-react-parser";
-
-const GET_PRODUCT = gql`
-  query GetProduct($id: String!) {
-    product(id: $id) {
-      id
-      name
-      inStock
-      gallery
-      description
-      category
-      attributes {
-        id
-        name
-        items {
-          id
-          value
-          displayValue
-        }
-        type
-      }
-      prices {
-        amount
-        currency {
-          label
-          symbol
-        }
-      }
-      brand
-    }
-  }
-`;
+import { GET_PRODUCT } from "../apollo/queries";
+import { withCartContext } from "../context/CartContext";
 
 class ProductDetail extends React.Component {
   constructor(props) {
@@ -47,12 +17,13 @@ class ProductDetail extends React.Component {
   componentDidMount() {
     const id = window.location.pathname.split("/")[2];
     client.query({ query: GET_PRODUCT, variables: { id } }).then((result) => {
-      const product = result.data.product;
+      const { product } = result.data;
+      this.setState({ product });
       const selectedAttributes = {};
-      product.attributes.forEach((attr) => {
-        selectedAttributes[attr.id] = null;
+      product.attributes.forEach((attribute) => {
+        selectedAttributes[attribute.id] = null;
       });
-      this.setState({ product, selectedAttributes });
+      this.setState({ selectedAttributes });
     });
   }
 
@@ -73,14 +44,7 @@ class ProductDetail extends React.Component {
 
   addToCart = () => {
     const { product, selectedAttributes } = this.state;
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    cart.push({
-      ...product,
-      selectedAttributes,
-      quantity: 1,
-    });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert("Product added to cart!");
+    this.props.cartContext.addToCart(product, selectedAttributes);
   };
 
   changeImage = (index) => {
@@ -139,56 +103,103 @@ class ProductDetail extends React.Component {
     }
 
     return (
-      <div className="container mx-auto px-4">
-        <div className="flex mt-8">
-          <div className="w-1/12 mr-4">
-            {product.gallery.map((image, index) => (
+      <div className="container mx-auto px-4 my-20">
+        <div className="flex flex-col md:flex-row mt-8">
+          <div
+            className="flex md:w-7/12"
+            style={{
+              height: "400px",
+            }}
+          >
+            <div className="w-2/12 mr-4 overflow-y-auto scrollbar-hide">
+              {product.gallery.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  className={`mb-4 cursor-pointer object-contain w-full h-20 ${
+                    currentImageIndex === index ? "border-2 border-black" : ""
+                  }`}
+                  onClick={() => this.changeImage(index)}
+                />
+              ))}
+            </div>
+
+            <div className="w-10/12 relative" data-testid="product-gallery">
               <img
-                key={index}
-                src={image}
-                alt={`Thumbnail ${index}`}
-                className={`mb-4 cursor-pointer ${
-                  currentImageIndex === index ? "border-2 border-black" : ""
-                }`}
-                onClick={() => this.changeImage(index)}
+                src={product.gallery[currentImageIndex]}
+                alt={product.name}
+                className="w-full h-full object-contain"
               />
-            ))}
+              {product.gallery.length > 1 && (
+                <>
+                  <button
+                    className="absolute top-1/2 left-0 transform -translate-y-1/2"
+                    onClick={() =>
+                      this.changeImage(
+                        (currentImageIndex - 1 + product.gallery.length) %
+                          product.gallery.length
+                      )
+                    }
+                  >
+                    <svg
+                      width="32"
+                      height="32"
+                      viewBox="0 0 32 32"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        width="31.6978"
+                        height="31.6978"
+                        transform="matrix(0.999953 0.00966993 -0.00948818 0.999955 0.300781 0)"
+                        fill="black"
+                        fill-opacity="0.73"
+                      />
+                      <path
+                        d="M18.9687 8.16618L11.5396 15.5875L18.9687 23.0088"
+                        stroke="white"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    className="absolute top-1/2 right-0 transform -translate-y-1/2"
+                    onClick={() =>
+                      this.changeImage(
+                        (currentImageIndex + 1) % product.gallery.length
+                      )
+                    }
+                  >
+                    <svg
+                      width="32"
+                      height="32"
+                      viewBox="0 0 32 32"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        width="32"
+                        height="32"
+                        transform="matrix(-1 0 0 1 32 0)"
+                        fill="black"
+                        fill-opacity="0.73"
+                      />
+                      <path
+                        d="M13 8.09158L20.5 15.5836L13 23.0757"
+                        stroke="white"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-
-          <div className="w-5/12 relative" data-testid="product-gallery">
-            <img
-              src={product.gallery[currentImageIndex]}
-              alt={product.name}
-              className="w-full"
-            />
-            {product.gallery.length > 1 && (
-              <>
-                <button
-                  className="absolute top-1/2 left-0 bg-white p-2"
-                  onClick={() =>
-                    this.changeImage(
-                      (currentImageIndex - 1 + product.gallery.length) %
-                        product.gallery.length
-                    )
-                  }
-                >
-                  &#8592;
-                </button>
-                <button
-                  className="absolute top-1/2 right-0 bg-white p-2"
-                  onClick={() =>
-                    this.changeImage(
-                      (currentImageIndex + 1) % product.gallery.length
-                    )
-                  }
-                >
-                  &#8594;
-                </button>
-              </>
-            )}
-          </div>
-
-          <div className="w-5/12 ml-8">
+          <div className="ml-8 md:w-5/12 ">
             <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
             {product.attributes.map(this.renderAttributeOptions)}
             <div className="mb-4">
@@ -222,4 +233,4 @@ class ProductDetail extends React.Component {
   }
 }
 
-export default ProductDetail;
+export default withCartContext(ProductDetail);

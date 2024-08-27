@@ -1,16 +1,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import Cart from "./Cart";
-import { gql } from "@apollo/client";
 import client from "../apollo/apolloClient";
-
-const GET_CATEGORIES = gql`
-  {
-    categories {
-      name
-    }
-  }
-`;
+import { GET_CATEGORIES } from "../apollo/queries";
 
 class Header extends React.Component {
   constructor(props) {
@@ -45,7 +37,7 @@ class Header extends React.Component {
 
   render() {
     return (
-      <nav className="flex justify-between items-center px-28 h-16">
+      <nav className="flex justify-between items-center px-5 md:px-28 h-16">
         <div className="flex space-x-4">
           {this.state.categories.map((category) => (
             <Link
