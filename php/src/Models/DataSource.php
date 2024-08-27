@@ -27,6 +27,8 @@ class DataSource
         self::$prices = new Prices($db);
         self::$product = new Product($db);
         self::$orderItemAttr = new OrderItemsAttr($db);
+        self::$orderItems = new OrderItems($db);
+        self::$orders = new Orders($db);
     }
 
     public static function getAttributeByProductId($Id)
@@ -100,5 +102,10 @@ class DataSource
     public static function createOrder($Order)
     {
         return self::$orders->createOrder($Order);
+    }
+
+    public static function getOrders()
+    {
+        return self::$orders->getOrders();
     }
 }

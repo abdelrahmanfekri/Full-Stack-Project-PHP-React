@@ -16,6 +16,12 @@ class Types
     public static $attributeItemType;
     public static $attributeSetType;
     public static $priceType;
+    public static $orderType;
+    public static $orderItemType;
+    public static $orderItemAttrType;
+    public static $orderInputType;
+    public static $orderItemInputType;
+    public static $orderItemAttributeInputType;
 
 
     public static function init()
@@ -119,14 +125,15 @@ class Types
         $orderItemAttributeInputType = new InputObjectType([
             'name' => 'OrderItemAttributeInput',
             'fields' => [
-                'attributeId' => ['type' => Type::nonNull(Type::int())],
+                'attribute_id' => ['type' => Type::nonNull(Type::string())],
                 'value' => ['type' => Type::nonNull(Type::string())],
             ]
         ]);
         $orderItemInputType = new InputObjectType([
             'name' => 'OrderItemInput',
             'fields' => [
-                'productId' => ['type' => Type::nonNull(Type::string())],
+                'product_id' => ['type' => Type::nonNull(Type::string())],
+                'price' => ['type' => Type::nonNull(Type::float())],
                 'quantity' => ['type' => Type::nonNull(Type::int())],
                 'attributes' => ['type' => Type::listOf($orderItemAttributeInputType)],
             ]
@@ -143,7 +150,7 @@ class Types
             'fields' => [
                 'id' => Type::int(),
                 'order_item_id' => Type::int(),
-                'attribute_id' => Type::int(),
+                'attribute_id' => Type::string(),
                 'value' => Type::string(),
             ],
         ]);
@@ -175,7 +182,7 @@ class Types
                 'items' => [
                     'type' => Type::listOf($orderItemType),
                     'resolve' => function ($rootValue) {
-                        $result = DataSource::getOrderItemsByOrderId($rootValue['id']);
+                        $result = DataSource::getItemsByOrderId($rootValue['id']);
                         return $result;
                     }
                 ]
@@ -188,6 +195,11 @@ class Types
         self::$attributeItemType = $attributeItemType;
         self::$attributeSetType = $attributeSetType;
         self::$priceType = $priceType;
+        self::$orderType = $orderType;
+        self::$orderItemType = $orderItemType;
+        self::$orderItemInputType = $orderItemInputType;
+        self::$orderItemAttributeInputType = $orderItemAttributeInputType;
+        self::$orderInputType = $orderInputType;
     }
 }
 

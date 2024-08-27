@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS Orders (
 );
 
 CREATE TABLE IF NOT EXISTS OrderItems (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
     product_id VARCHAR(255) NOT NULL,
     quantity INT NOT NULL,
@@ -66,10 +66,10 @@ CREATE TABLE IF NOT EXISTS OrderItems (
     FOREIGN KEY (product_id) REFERENCES Products (id) ON DELETE CASCADE
 );
 
-CREATE OrderItemAttr (
-    id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS OrderItemAttr (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     order_item_id INT NOT NULL,
-    attribute_id INT NOT NULL,
+    attribute_id VARCHAR(50) NOT NULL,
     value VARCHAR(255) NOT NULL,
-    FOREIGN KEY (order_item_id) REFERENCES OrderItems (id) ON DELETE CASCADE,
-)
+    FOREIGN KEY (order_item_id) REFERENCES OrderItems (id) ON DELETE CASCADE
+);

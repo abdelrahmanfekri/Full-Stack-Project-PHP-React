@@ -57,6 +57,11 @@ class Header extends React.Component {
                   ? " border-green-500"
                   : "")
               }
+              data-testid={
+                category.name.toLowerCase() === this.state.active
+                  ? "active-category-link"
+                  : "category-link"
+              }
             >
               {category.name.toUpperCase()}
             </Link>

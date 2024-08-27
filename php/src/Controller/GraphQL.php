@@ -46,25 +46,30 @@ class GraphQL
                         'resolve' => function ($root, $args, $context) {
                             return DataSource::getProductById($args['id']);
                         }
+                    ],
+                    'orders' => [
+                        'type' => Type::listOf(Types::$orderType),
+                        'resolve' => function () {
+                            return DataSource::getOrders();
+                        }
                     ]
                 ]
             ]);
             $mutationType = new ObjectType([
                 'name' => 'Mutation',
                 'fields' => [
-                    'sum' => [
-                        'type' => Type::int(),
+                    'createOrder' => [
+                        'type' => Type::string(),
                         'args' => [
-                            'x' => ['type' => Type::int()],
-                            'y' => ['type' => Type::int()],
+                            'order' => Type::nonNull(Types::$orderInputType),
                         ],
-                        'resolve' => static fn($calc, array $args): int => $args['x'] + $args['y'],
-                    ],
+                        'resolve' => function ($root, $args, $context) {
+                            return DataSource::createOrder($args['order']);
+                        }
+                    ]
                 ],
             ]);
 
-            // See docs on schema options:
-            // https://webonyx.github.io/graphql-php/schema-definition/#configuration-options
             $schema = new Schema(
                 (new SchemaConfig())
                     ->setQuery($queryType)

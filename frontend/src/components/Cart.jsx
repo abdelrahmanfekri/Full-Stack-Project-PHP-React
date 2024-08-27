@@ -1,4 +1,11 @@
 import React from "react";
+import { gql, useMutation } from "@apollo/client";
+
+const CREATE_ORDER = gql`
+  mutation CreateOrder($items: [OrderItemInput!]!) {
+    createOrder(order: { items: $items })
+  }
+`;
 
 class Cart extends React.Component {
   constructor(props) {
@@ -73,10 +80,79 @@ class Cart extends React.Component {
     });
   };
 
+  placeOrder = async () => {
+    const orderItems = this.state.items.map((item) => ({
+      quantity: item.quantity,
+      product_id: item.id,
+      price: item.prices[0].amount,
+      attributes: [
+        { attribute_id: "size", value: item.selectedSize },
+        { attribute_id: "color", value: item.selectedColor },
+      ],
+    }));
+
+    try {
+      await this.props.createOrder({ variables: { items: orderItems } });
+      this.setState({ items: [] });
+      localStorage.removeItem("cart");
+      alert("Order placed successfully!");
+    } catch (error) {
+      console.error("Error placing order:", error);
+      alert("Failed to place order. Please try again.");
+    }
+  };
+
+  renderAttributeOptions(item, attribute) {
+    const kebabCase = (str) => str.toLowerCase().replace(/\s+/g, "-");
+    const attributeNameKebab = kebabCase(attribute.id);
+
+    return (
+      <div
+        key={attribute.id}
+        data-testid={`cart-item-attribute-${attributeNameKebab}`}
+      >
+        <p className="text-sm mt-2">{attribute.name}:</p>
+        <div className="flex mt-1">
+          {attribute.items.map((option) => {
+            const isSelected =
+              item.selectedAttributes[attribute.id] === option.id;
+            const optionNameKebab = kebabCase(option.value);
+            return (
+              <div
+                key={option.id}
+                className={`mr-1 p-1 border ${
+                  isSelected ? "border-black" : "border-gray-300"
+                }`}
+                data-testid={`cart-item-attribute-${attributeNameKebab}-${optionNameKebab}${
+                  isSelected ? "-selected" : ""
+                }`}
+              >
+                {attribute.type === "swatch" ? (
+                  <div
+                    className="w-4 h-4"
+                    style={{ backgroundColor: option.value }}
+                  ></div>
+                ) : (
+                  <span className="text-xs">{option.value}</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   render() {
+    const totalItems = this.state.items.reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    );
+    const itemText = totalItems === 1 ? "1 Item" : `${totalItems} Items`;
+
     return (
       <div className="relative">
-        <button onClick={this.toggleCart}>
+        <button onClick={this.toggleCart} data-testid="cart-btn">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -92,91 +168,110 @@ class Cart extends React.Component {
             />
           </svg>
         </button>
-        <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-          {this.state.items.length}
-        </span>
+        {this.state.items.length > 0 && (
+          <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+            {this.state.items.length}
+          </span>
+        )}
 
         {this.state.isOpen && (
-          <div className="absolute right-0 mt-2 bg-white p-4 shadow-lg w-80 z-10">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-bold text-lg">
-                My Bag, {this.state.items.length} items
-              </h2>
-            </div>
-
-            {this.state.items.map((item) => (
-              <div
-                key={`${item.id}-${item.selectedSize}-${item.selectedColor}`}
-                className="mb-4 pb-4 border-b"
-              >
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-sm">
-                      ${item.prices[0].amount.toFixed(2)}
-                    </p>
-                    <p className="text-sm mt-2">Size: {item.selectedSize}</p>
-                    <div className="flex items-center mt-1">
-                      <span className="text-sm mr-2">Color:</span>
-                      {this.renderColorOption(item.selectedColor)}
-                    </div>
-                  </div>
-                  <img
-                    src={item.gallery[0]}
-                    alt={item.name}
-                    className="w-20 h-20 object-cover"
-                  />
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <div className="flex items-center">
-                    <button
-                      className="border w-6 h-6 flex items-center justify-center"
-                      onClick={() => this.updateQuantity(item, -1)}
-                    >
-                      -
-                    </button>
-                    <span className="mx-2">{item.quantity}</span>
-                    <button
-                      className="border w-6 h-6 flex items-center justify-center"
-                      onClick={() => this.updateQuantity(item, 1)}
-                    >
-                      +
-                    </button>
-                  </div>
-                  <button
-                    className="text-gray-500"
-                    onClick={() => this.removeItem(item)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                </div>
+          <>
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 z-40"
+              onClick={this.toggleCart}
+            ></div>
+            <div className="absolute right-0 mt-2 bg-white p-4 shadow-lg w-80 z-50">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="font-bold text-lg">My Bag, {itemText}</h2>
               </div>
-            ))}
 
-            <div className="flex justify-between items-center font-semibold mb-4">
-              <span>Total</span>
-              <span>${this.calculateTotal()}</span>
+              {this.state.items.map((item) => (
+                <div
+                  key={`${item.id}-${JSON.stringify(item.selectedAttributes)}`}
+                  className="mb-4 pb-4 border-b"
+                >
+                  <div className="flex justify-between">
+                    <div>
+                      <h3 className="font-semibold">{item.name}</h3>
+                      <p className="text-sm">
+                        ${item.prices[0].amount.toFixed(2)}
+                      </p>
+                      {item.attributes.map((attribute) =>
+                        this.renderAttributeOptions(item, attribute)
+                      )}
+                    </div>
+                    <img
+                      src={item.gallery[0]}
+                      alt={item.name}
+                      className="w-20 h-20 object-cover"
+                    />
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <div className="flex items-center">
+                      <button
+                        className="border w-6 h-6 flex items-center justify-center"
+                        onClick={() => this.updateQuantity(item, -1)}
+                        data-testid="cart-item-amount-decrease"
+                      >
+                        -
+                      </button>
+                      <span className="mx-2" data-testid="cart-item-amount">
+                        {item.quantity}
+                      </span>
+                      <button
+                        className="border w-6 h-6 flex items-center justify-center"
+                        onClick={() => this.updateQuantity(item, 1)}
+                        data-testid="cart-item-amount-increase"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <button
+                      className="text-gray-500"
+                      onClick={() => this.removeItem(item)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <div className="flex justify-between items-center font-semibold mb-4">
+                <span>Total</span>
+                <span>${this.calculateTotal()}</span>
+              </div>
+
+              <button
+                className={`w-full py-2 font-semibold ${
+                  this.state.items.length > 0
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+                onClick={this.placeOrder}
+                disabled={this.state.items.length === 0}
+              >
+                PLACE ORDER
+              </button>
             </div>
-
-            <button className="w-full bg-green-500 text-white py-2 font-semibold">
-              PLACE ORDER
-            </button>
-          </div>
+          </>
         )}
       </div>
     );
   }
 }
 
-export default Cart;
+export default function CartWithMutation() {
+  const [createOrder] = useMutation(CREATE_ORDER);
+  return <Cart createOrder={createOrder} />;
+}
