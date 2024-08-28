@@ -92,6 +92,7 @@ class Cart extends React.Component {
         {cartContext.isOpen && (
           <>
             <div
+              data-testid="cart-overlay"
               className="fixed top-16 inset-0 bg-black bg-opacity-30 z-40"
               onClick={cartContext.toggleCart}
             ></div>
