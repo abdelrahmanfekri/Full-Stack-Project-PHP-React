@@ -94,6 +94,12 @@ export class CartProvider extends React.Component {
     }
   };
 
+  openCart = () => {
+    if (!this.state.isOpen) {
+      this.toggleCart();
+    }
+  };
+
   render() {
     return (
       <CartContext.Provider
@@ -104,6 +110,7 @@ export class CartProvider extends React.Component {
           placeOrder: this.placeOrder,
           calculateTotal: this.calculateTotal,
           addToCart: this.addToCart,
+          openCart: this.openCart,
         }}
       >
         {this.props.children}

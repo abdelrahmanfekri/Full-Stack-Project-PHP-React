@@ -67,7 +67,7 @@ class Cart extends React.Component {
 
     return (
       <div className="relative">
-        <button onClick={cartContext.toggleCart} data-testid="cart-btn">
+        <button onClick={cartContext.openCart} data-testid="cart-btn">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
