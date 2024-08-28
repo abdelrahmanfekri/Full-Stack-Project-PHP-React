@@ -81,7 +81,6 @@ export class CartProvider extends React.Component {
       existingItem.quantity += 1;
       this.setState({ items: [...this.state.items] }, () => {
         localStorage.setItem("cart", JSON.stringify(this.state.items));
-        this.toggleCart();
       });
     } else {
       const item = { ...product };
@@ -89,7 +88,6 @@ export class CartProvider extends React.Component {
       item.selectedAttributes = selectedAttributes;
       this.setState({ items: [...this.state.items, item] }, () => {
         localStorage.setItem("cart", JSON.stringify(this.state.items));
-        this.toggleCart();
       });
     }
   };

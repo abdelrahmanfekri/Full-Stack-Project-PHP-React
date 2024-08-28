@@ -45,6 +45,9 @@ class ProductDetail extends React.Component {
   addToCart = () => {
     const { product, selectedAttributes } = this.state;
     this.props.cartContext.addToCart(product, selectedAttributes);
+    setTimeout(() => {
+      this.props.cartContext.openCart();
+    }, 500);
   };
 
   changeImage = (index) => {
