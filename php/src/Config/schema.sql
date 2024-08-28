@@ -1,3 +1,4 @@
+-- Active: 1724817730954@@127.0.0.1@3306@ecommerce
 CREATE TABLE IF NOT EXISTS Categories (name VARCHAR(255) PRIMARY KEY);
 
 CREATE TABLE IF NOT EXISTS Products (
@@ -33,7 +34,7 @@ CREATE TABLE IF NOT EXISTS AttributesItems (
     value VARCHAR(255) NOT NULL,
     attribute_id INT,
     FOREIGN KEY (attribute_id) REFERENCES ProductAttributes (pk) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS Currencies (
     id INT PRIMARY KEY AUTO_INCREMENT,

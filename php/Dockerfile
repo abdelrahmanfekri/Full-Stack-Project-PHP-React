@@ -1,36 +1,38 @@
-FROM php:8.0-fpm
+# Dockerfile for PHP backend using built-in server
 
-# Install system dependencies
+# Use an official PHP CLI image
+FROM php:8.1-cli
+
+# Set the working directory
+WORKDIR /var/www/html
+
+# Install PHP extensions and other dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip
+    libzip-dev \
+    unzip \
+    && docker-php-ext-install zip pdo_mysql mysqli
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Install PHP extensions
-RUN docker-php-ext-install mysqli mbstring exif pcntl bcmath gd
+# Copy Composer files
+COPY composer.json composer.lock ./
 
-# Get latest Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install Composer dependencies
+RUN composer install --no-scripts --no-autoloader
 
-# Set working directory
-WORKDIR /var/www
+# Copy the application source code
+COPY . .
 
-# Copy existing application directory contents
-COPY . /var/www
+# Generate optimized autoloader
+RUN composer dump-autoload --optimize
 
-# Install dependencies
-RUN composer install
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
-# Change ownership of our applications
-RUN chown -R www-data:www-data /var/www
+# Expose port 8000 for PHP's built-in server
+EXPOSE 8000
 
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
+# Start PHP's built-in server
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]

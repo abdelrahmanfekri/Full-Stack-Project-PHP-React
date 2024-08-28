@@ -1,48 +1,41 @@
-version: '3.8'
-
+version: '3'
 services:
-  nginx:
-    image: nginx:latest
+  frontend:
+    build: ./frontend
     ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./frontend:/usr/share/nginx/html
-    depends_on:
-      - php
-      - frontend
+      - "80:3000"
+    networks:
+      - ecommerce-network
 
-  php:
-    build:
-      context: ./php
-      dockerfile: Dockerfile
+  backend:
+    build: ./php
+    ports:
+      - "8000:8000"
+    networks:
+      - ecommerce-network
     volumes:
-      - ./php:/var/www
-    depends_on:
-      - db
+      - ./php:/var/www/html
     environment:
-      DB_HOST: db
-      DB_NAME: myapp
-      DB_USER: myuser
-      DB_PASS: mypassword
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=secret
+      - DB_NAME=ecommerce
 
   db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: myapp
-      MYSQL_USER: myuser
-      MYSQL_PASSWORD: mypassword
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: ecommerce
+    ports:
+      - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db-data:/var/lib/mysql
+    networks:
+      - ecommerce-network
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+networks:
+  ecommerce-network:
+    driver: bridge
 
 volumes:
-  mysql_data:
+  db-data:
