@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.css": "/abdelrahmanfekri/Full-Stack-Project-PHP-React.git/static/css/main.cdf13b8f.css",
-    "main.js": "/abdelrahmanfekri/Full-Stack-Project-PHP-React.git/static/js/main.805b23ee.js",
-    "index.html": "/abdelrahmanfekri/Full-Stack-Project-PHP-React.git/index.html",
-    "main.cdf13b8f.css.map": "/abdelrahmanfekri/Full-Stack-Project-PHP-React.git/static/css/main.cdf13b8f.css.map",
-    "main.805b23ee.js.map": "/abdelrahmanfekri/Full-Stack-Project-PHP-React.git/static/js/main.805b23ee.js.map"
+    "main.css": "//Full-Stack-Project-PHP-React.git/static/css/main.cdf13b8f.css",
+    "main.js": "//Full-Stack-Project-PHP-React.git/static/js/main.805b23ee.js",
+    "index.html": "//Full-Stack-Project-PHP-React.git/index.html",
+    "main.cdf13b8f.css.map": "//Full-Stack-Project-PHP-React.git/static/css/main.cdf13b8f.css.map",
+    "main.805b23ee.js.map": "//Full-Stack-Project-PHP-React.git/static/js/main.805b23ee.js.map"
   },
   "entrypoints": [
     "static/css/main.cdf13b8f.css",
