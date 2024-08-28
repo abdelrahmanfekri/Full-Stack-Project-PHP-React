@@ -1,3 +1,4 @@
+-- Active: 1724817730954@@3.79.108.220@3306@ecommerce
 -- Insert Categories
 INSERT INTO Categories (name) VALUES ('all'), ('clothes'), ('tech');
 
