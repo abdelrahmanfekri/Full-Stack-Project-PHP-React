@@ -15,7 +15,5 @@ RUN npm install
 # Copy the rest of the app's code
 COPY . .
 
-EXPOSE 3000
-
 # Build the React app for production
 CMD [ "npm", "start" ]
