@@ -70,7 +70,7 @@ class ProductDetail extends React.Component {
                 <button
                   data-testid={`product-attribute-${kebabCase(
                     attribute.name
-                  )}-${item.value})`}
+                  )}-${item.value}`}
                   key={item.id}
                   className={`w-8 h-8 border-2 ${
                     isSelected ? "border-black" : "border-gray-300"
@@ -84,7 +84,7 @@ class ProductDetail extends React.Component {
                 <button
                   data-testid={`product-attribute-${kebabCase(
                     attribute.name
-                  )}-${item.value})`}
+                  )}-${item.value}`}
                   key={item.id}
                   className={`border px-3 py-1 ${
                     isSelected ? "border-black" : "border-gray-300"

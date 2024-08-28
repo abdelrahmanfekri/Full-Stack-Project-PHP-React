@@ -84,10 +84,7 @@ class Cart extends React.Component {
           </svg>
         </button>
         {cartContext.items.length > 0 && (
-          <span
-            data-testid="cart-overlay"
-            className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center"
-          >
+          <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
             {cartContext.items.length}
           </span>
         )}
@@ -95,11 +92,14 @@ class Cart extends React.Component {
         {cartContext.isOpen && (
           <>
             <div
-              hidden={cartContext.isOpen}
               className="fixed top-16 inset-0 bg-black bg-opacity-30 z-40"
               onClick={cartContext.toggleCart}
             ></div>
-            <div className="absolute right-0 mt-2 bg-white p-4 shadow-lg w-80 z-50">
+            <div
+              data-testid="cart-overlay"
+              hidden={!cartContext.isOpen}
+              className="absolute right-0 mt-2 bg-white p-4 shadow-lg w-80 z-50"
+            >
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-bold text-lg">
                   My Bag,{" "}
