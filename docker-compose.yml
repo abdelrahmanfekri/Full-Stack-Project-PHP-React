@@ -1,12 +1,5 @@
 version: '3'
 services:
-  frontend:
-    build: ./frontend
-    ports:
-      - "80:3000"
-    networks:
-      - ecommerce-network
-
   backend:
     build: ./php
     ports:
@@ -32,10 +25,6 @@ services:
       - db-data:/var/lib/mysql
     networks:
       - ecommerce-network
-
-networks:
-  ecommerce-network:
-    driver: bridge
 
 volumes:
   db-data:
