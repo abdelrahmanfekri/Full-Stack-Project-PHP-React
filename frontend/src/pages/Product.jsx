@@ -68,6 +68,9 @@ class ProductDetail extends React.Component {
             if (attribute.type === "swatch") {
               return (
                 <button
+                  data-testid={`product-attribute-${kebabCase(
+                    attribute.name
+                  )}-${item.value})`}
                   key={item.id}
                   className={`w-8 h-8 border-2 ${
                     isSelected ? "border-black" : "border-gray-300"
@@ -79,6 +82,9 @@ class ProductDetail extends React.Component {
             } else {
               return (
                 <button
+                  data-testid={`product-attribute-${kebabCase(
+                    attribute.name
+                  )}-${item.value})`}
                   key={item.id}
                   className={`border px-3 py-1 ${
                     isSelected ? "border-black" : "border-gray-300"
