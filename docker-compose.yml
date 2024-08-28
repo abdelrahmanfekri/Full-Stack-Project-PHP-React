@@ -4,8 +4,6 @@ services:
     build: ./php
     ports:
       - "8000:8000"
-    networks:
-      - ecommerce-network
     volumes:
       - ./php:/var/www/html
     environment:
@@ -23,8 +21,6 @@ services:
       - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
-    networks:
-      - ecommerce-network
-
+      
 volumes:
   db-data:
