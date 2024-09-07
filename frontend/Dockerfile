@@ -15,14 +15,6 @@ RUN npm install
 # Copy the rest of the app's code
 COPY . .
 
-RUN npm run build
+RUN npm install -g serve
 
-# Use an Nginx image to serve the app
-FROM nginx:alpine
-COPY --from=0 /app/build /usr/share/nginx/html
-
-# Expose the port
-EXPOSE 80
-
-# Start the Nginx server
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["serve", "-s", "build"]
